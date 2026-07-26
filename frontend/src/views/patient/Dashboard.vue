@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import api from '../../services/api'
 import { useAuthStore } from '../../stores/auth'
 import Logo from '../../components/Logo.vue'
+import PaymentModal from '../../components/PaymentModal.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -11,6 +12,7 @@ const authStore = useAuthStore()
 const rendezVous = ref<any[]>([])
 const chargement = ref(true)
 const erreur = ref('')
+const rdvAPayer = ref<number | null>(null)
 
 async function chargerRendezVous() {
   chargement.value = true
@@ -24,19 +26,14 @@ async function chargerRendezVous() {
   }
 }
 
-async function payer(rdvId: number) {
-  try {
-    const paymentMethod = prompt(
-      'ID du moyen de paiement Stripe (pm_...) genere via curl avec tok_visa :'
-    )
-    if (!paymentMethod) return
+function ouvrirPaiement(rdvId: number) {
+  rdvAPayer.value = rdvId
+}
 
-    await api.post(`/rendez-vous/${rdvId}/payer`, { payment_method: paymentMethod })
-    await chargerRendezVous()
-    alert('Paiement effectue avec succes !')
-  } catch (e: any) {
-    alert(e.response?.data?.message || 'Erreur lors du paiement.')
-  }
+async function surPaiementReussi() {
+  rdvAPayer.value = null
+  await chargerRendezVous()
+  alert('Paiement effectue avec succes !')
 }
 
 async function annuler(rdvId: number) {
@@ -133,7 +130,7 @@ onMounted(chargerRendezVous)
           </p>
 
           <div class="actions">
-            <button v-if="rdv.statut === 'en_attente'" @click="payer(rdv.id)" class="btn-primary petit">
+            <button v-if="rdv.statut === 'en_attente'" @click="ouvrirPaiement(rdv.id)" class="btn-primary petit">
               Payer la consultation
             </button>
             <button
@@ -147,6 +144,13 @@ onMounted(chargerRendezVous)
         </div>
       </div>
     </main>
+
+    <PaymentModal
+      v-if="rdvAPayer"
+      :rendez-vous-id="rdvAPayer"
+      @success="surPaiementReussi"
+      @close="rdvAPayer = null"
+    />
   </div>
 </template>
 
