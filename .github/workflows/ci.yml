@@ -1,0 +1,56 @@
+name: CI MediConnect
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend-ci:
+    name: Backend (Laravel)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Installer PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: pdo, pdo_pgsql, mbstring, zip, gd, bcmath
+
+      - name: Installer les dependances Composer
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Verifier que l'image Docker se construit
+        run: docker build -t mediconnect-backend:ci .
+
+  frontend-ci:
+    name: Frontend (Vue)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Installer Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Installer les dependances
+        run: npm ci
+
+      - name: Build de production
+        run: npm run build
+
+      - name: Verifier que l'image Docker se construit
+        run: docker build -t mediconnect-frontend:ci .
