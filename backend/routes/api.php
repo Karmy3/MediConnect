@@ -23,6 +23,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/creneaux/{creneau}', [CreneauController::class, 'destroy']);
         Route::get('/rendez-vous-medecin', [RendezVousController::class, 'rendezVousMedecin']);
         Route::patch('/rendez-vous/{rendezVous}/confirmer', [RendezVousController::class, 'confirmer']);
+        Route::post('/rendez-vous/{rendezVous}/analyser-ia', [RendezVousController::class, 'analyserSymptomes']);
     });
 
     Route::middleware('role:patient')->group(function () {

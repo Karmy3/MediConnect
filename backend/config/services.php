@@ -46,4 +46,8 @@ return [
         'secret' => env('STRIPE_SECRET'),
     ],
 
+    'groq' => [
+        'key' => env('IA_API_KEY'),
+        'model' => env('IA_MODEL', 'openai/gpt-oss-20b'),
+    ],
 ];

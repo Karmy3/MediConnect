@@ -8,6 +8,7 @@ use App\Models\RendezVous;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use App\Services\IAService;
 
 class RendezVousController extends Controller
 {
@@ -103,5 +104,32 @@ class RendezVousController extends Controller
 
             return response()->json(['message' => 'Rendez-vous annule.']);
         });
+    }
+
+    // Le medecin declenche la pre-analyse IA des symptomes decrits par le patient
+    public function analyserSymptomes(Request $request, RendezVous $rendezVous, IAService $iaService)
+    {
+        $medecinProfile = $request->user()->medecinProfile;
+
+        if ($rendezVous->creneau->medecin_profile_id !== $medecinProfile->id) {
+            return response()->json(['message' => 'Acces refuse.'], 403);
+        }
+
+        if (! $rendezVous->symptomes_description) {
+            return response()->json(['message' => 'Aucune description de symptomes disponible pour ce rendez-vous.'], 422);
+        }
+
+        try {
+            $analyse = $iaService->analyserSymptomes($rendezVous->symptomes_description);
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 502);
+        }
+
+        $rendezVous->update(['analyse_ia' => $analyse]);
+
+        return response()->json([
+            'rendez_vous_id' => $rendezVous->id,
+            'analyse_ia' => $analyse,
+        ]);
     }
 }
