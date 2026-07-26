@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use App\Services\IAService;
+use App\Mail\RendezVousConfirmeMail;
+use Illuminate\Support\Facades\Mail;
 
 class RendezVousController extends Controller
 {
@@ -82,6 +84,8 @@ class RendezVousController extends Controller
         }
 
         $rendezVous->update(['statut' => 'confirme']);
+
+        Mail::to($rendezVous->patient->email)->send(new RendezVousConfirmeMail($rendezVous->fresh(['patient', 'creneau.medecinProfile.user'])));
 
         return response()->json($rendezVous->fresh());
     }
