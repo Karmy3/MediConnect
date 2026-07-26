@@ -5,6 +5,8 @@ import api from '../../services/api'
 import { useAuthStore } from '../../stores/auth'
 import Logo from '../../components/Logo.vue'
 import PaymentModal from '../../components/PaymentModal.vue'
+import ConfirmModal from '../../components/ConfirmModal.vue'
+import Toast from '../../components/Toast.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -13,6 +15,8 @@ const rendezVous = ref<any[]>([])
 const chargement = ref(true)
 const erreur = ref('')
 const rdvAPayer = ref<number | null>(null)
+const rdvAAnnuler = ref<number | null>(null)
+const toast = ref<{ message: string; type: 'success' | 'error' } | null>(null)
 
 async function chargerRendezVous() {
   chargement.value = true
@@ -26,6 +30,11 @@ async function chargerRendezVous() {
   }
 }
 
+function afficherToast(message: string, type: 'success' | 'error') {
+  toast.value = { message, type }
+  setTimeout(() => (toast.value = null), 3500)
+}
+
 function ouvrirPaiement(rdvId: number) {
   rdvAPayer.value = rdvId
 }
@@ -33,16 +42,23 @@ function ouvrirPaiement(rdvId: number) {
 async function surPaiementReussi() {
   rdvAPayer.value = null
   await chargerRendezVous()
-  alert('Paiement effectue avec succes !')
+  afficherToast('Paiement effectue avec succes.', 'success')
 }
 
-async function annuler(rdvId: number) {
-  if (!confirm('Confirmer l\'annulation de ce rendez-vous ?')) return
+function demanderAnnulation(rdvId: number) {
+  rdvAAnnuler.value = rdvId
+}
+
+async function confirmerAnnulation() {
+  if (!rdvAAnnuler.value) return
   try {
-    await api.patch(`/rendez-vous/${rdvId}/annuler`)
+    await api.patch(`/rendez-vous/${rdvAAnnuler.value}/annuler`)
     await chargerRendezVous()
+    afficherToast('Rendez-vous annule.', 'success')
   } catch (e: any) {
-    alert(e.response?.data?.message || 'Erreur lors de l\'annulation.')
+    afficherToast(e.response?.data?.message || 'Erreur lors de l\'annulation.', 'error')
+  } finally {
+    rdvAAnnuler.value = null
   }
 }
 
@@ -135,7 +151,7 @@ onMounted(chargerRendezVous)
             </button>
             <button
               v-if="['en_attente', 'paye', 'confirme'].includes(rdv.statut)"
-              @click="annuler(rdv.id)"
+              @click="demanderAnnulation(rdv.id)"
               class="btn-danger petit"
             >
               Annuler
@@ -151,6 +167,16 @@ onMounted(chargerRendezVous)
       @success="surPaiementReussi"
       @close="rdvAPayer = null"
     />
+
+    <ConfirmModal
+      v-if="rdvAAnnuler"
+      titre="Annuler ce rendez-vous ?"
+      message="Cette action liberera le creneau et ne pourra pas etre annulee."
+      @confirm="confirmerAnnulation"
+      @cancel="rdvAAnnuler = null"
+    />
+
+    <Toast v-if="toast" :message="toast.message" :type="toast.type" />
   </div>
 </template>
 
