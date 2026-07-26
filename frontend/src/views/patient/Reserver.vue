@@ -16,6 +16,10 @@ const chargementCreneaux = ref(false)
 const chargementReservation = ref(false)
 const succes = ref(false)
 
+function initiales(nom: string) {
+  return nom ? nom.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() : '?'
+}
+
 async function chercherMedecins() {
   erreur.value = ''
   chargementRecherche.value = true
@@ -77,64 +81,77 @@ async function reserver(creneauId: number) {
 
 <template>
   <div class="page">
-    <div class="card">
-      <router-link to="/patient/tableau-de-bord" class="retour">← Retour</router-link>
-      <h1>Prendre rendez-vous</h1>
+    <header class="page-header">
+      <router-link to="/patient/tableau-de-bord" class="retour">← Retour au tableau de bord</router-link>
+    </header>
 
-      <div class="recherche">
-        <label>
-          Nom ou specialite du medecin
+    <div class="page-content">
+      <div class="intro">
+        <h1>Prendre rendez-vous</h1>
+        <p class="muted">Trouvez un medecin par nom ou specialite, et reservez un creneau disponible.</p>
+      </div>
+
+      <div class="card recherche-card">
+        <div class="recherche">
           <input
             v-model="recherche"
             type="text"
             placeholder="ex: Rakoto, Generaliste, Cardiologue..."
             @keyup.enter="chercherMedecins"
           />
-        </label>
-        <button @click="chercherMedecins" :disabled="chargementRecherche" class="btn-principal">
-          {{ chargementRecherche ? 'Recherche...' : 'Chercher' }}
-        </button>
-      </div>
-
-      <p v-if="erreur" class="erreur">{{ erreur }}</p>
-      <p v-if="succes" class="succes">Rendez-vous reserve avec succes !</p>
-
-      <div v-if="medecins.length && !medecinSelectionne" class="section">
-        <h3>Medecins trouves</h3>
-        <div class="liste-medecins">
-          <div
-            v-for="m in medecins"
-            :key="m.id"
-            class="medecin-card"
-            @click="selectionnerMedecin(m)"
-          >
-            <strong>Dr {{ m.name }}</strong>
-            <span>{{ m.specialite }}</span>
-            <span class="tarif">{{ m.tarif_consultation }} Ar</span>
-          </div>
+          <button @click="chercherMedecins" :disabled="chargementRecherche" class="btn-primary">
+            {{ chargementRecherche ? 'Recherche...' : 'Chercher' }}
+          </button>
         </div>
       </div>
 
-      <div v-if="medecinSelectionne" class="section">
+      <p v-if="erreur" class="message erreur">{{ erreur }}</p>
+      <p v-if="succes" class="message succes">Rendez-vous reserve avec succes ! Redirection...</p>
+
+      <div v-if="medecins.length && !medecinSelectionne" class="liste-medecins">
+        <div
+          v-for="m in medecins"
+          :key="m.id"
+          class="medecin-card"
+          @click="selectionnerMedecin(m)"
+        >
+          <div class="avatar">{{ initiales(m.name) }}</div>
+          <div class="medecin-card-info">
+            <strong>Dr {{ m.name }}</strong>
+            <span class="specialite">{{ m.specialite }}</span>
+          </div>
+          <span class="tarif">{{ m.tarif_consultation }} Ar</span>
+        </div>
+      </div>
+
+      <div v-if="medecinSelectionne" class="card selection-card">
         <button @click="medecinSelectionne = null; creneaux = []" class="btn-retour-liste">
           ← Changer de medecin
         </button>
-        <h3>Dr {{ medecinSelectionne.name }} — {{ medecinSelectionne.specialite }}</h3>
+
+        <div class="medecin-header">
+          <div class="avatar avatar-lg">{{ initiales(medecinSelectionne.name) }}</div>
+          <div>
+            <h3>Dr {{ medecinSelectionne.name }}</h3>
+            <p class="specialite">{{ medecinSelectionne.specialite }} · {{ medecinSelectionne.tarif_consultation }} Ar</p>
+          </div>
+        </div>
 
         <label class="label-symptomes">
           Decrivez vos symptomes (optionnel)
           <textarea v-model="symptomes" rows="3" placeholder="Fievre, toux, depuis combien de temps..."></textarea>
         </label>
 
-        <p v-if="chargementCreneaux">Chargement des creneaux...</p>
+        <p v-if="chargementCreneaux" class="message">Chargement des creneaux...</p>
 
         <div v-else-if="creneaux.length" class="liste-creneaux">
+          <p class="section-label">Creneaux disponibles</p>
           <div v-for="c in creneaux" :key="c.id" class="creneau">
             <span>{{ new Date(c.date_debut).toLocaleString('fr-FR') }}</span>
             <button
               @click="reserver(c.id)"
               :disabled="chargementReservation"
-              class="btn-principal petit"
+              class="btn-primary petit"
             >
               Reserver
             </button>
@@ -146,26 +163,230 @@ async function reserver(creneauId: number) {
 </template>
 
 <style scoped>
-.page { min-height: 100vh; background: #f4f6f8; padding: 32px; }
-.card { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 12px; padding: 32px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
-.retour { color: #6b7280; text-decoration: none; font-size: 14px; }
-h1 { margin: 12px 0 24px; }
-.recherche { display: flex; gap: 12px; align-items: flex-end; margin-bottom: 20px; }
-label { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #374151; flex: 1; }
-input, textarea { padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; font-family: inherit; }
-.btn-principal { background: #2563eb; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-size: 14px; white-space: nowrap; }
-.btn-principal:disabled { opacity: 0.6; cursor: not-allowed; }
-.petit { padding: 6px 14px; font-size: 13px; }
-.erreur { color: #dc2626; font-size: 14px; }
-.succes { color: #059669; font-size: 14px; }
-.section { margin-top: 20px; border-top: 1px solid #e5e7eb; padding-top: 20px; }
-.label-symptomes { margin: 16px 0; }
-.liste-medecins { display: flex; flex-direction: column; gap: 10px; }
-.medecin-card { display: flex; flex-direction: column; gap: 4px; background: #f9fafb; padding: 14px 16px; border-radius: 8px; cursor: pointer; transition: background 0.15s; }
-.medecin-card:hover { background: #eff6ff; }
-.medecin-card .tarif { color: #2563eb; font-size: 13px; font-weight: 500; }
-.medecin-card span { font-size: 13px; color: #6b7280; }
-.btn-retour-liste { background: none; border: none; color: #2563eb; cursor: pointer; font-size: 13px; margin-bottom: 12px; padding: 0; }
-.liste-creneaux { display: flex; flex-direction: column; gap: 10px; }
-.creneau { display: flex; justify-content: space-between; align-items: center; background: #f9fafb; padding: 12px 16px; border-radius: 8px; }
+.page {
+  min-height: 100vh;
+  background: var(--color-secondary);
+}
+
+.page-header {
+  background: var(--color-white);
+  padding: 18px 40px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.retour {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.page-content {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.intro h1 {
+  font-size: 26px;
+}
+
+.muted {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  margin: 6px 0 24px;
+}
+
+.card {
+  background: var(--color-white);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+.recherche-card {
+  margin-bottom: 16px;
+}
+
+.recherche {
+  display: flex;
+  gap: 12px;
+}
+
+input, textarea {
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  font-size: 14px;
+  flex: 1;
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  padding: 12px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.petit {
+  padding: 8px 16px;
+  font-size: 13px;
+}
+
+.message {
+  font-size: 14px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+
+.message.erreur {
+  color: var(--color-danger);
+  background: var(--color-danger-bg);
+}
+
+.message.succes {
+  color: var(--color-success);
+  background: var(--color-success-bg);
+}
+
+.liste-medecins {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.medecin-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--color-white);
+  padding: 16px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: transform 0.12s;
+}
+
+.medecin-card:hover {
+  transform: translateY(-2px);
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.avatar-lg {
+  width: 52px;
+  height: 52px;
+  font-size: 18px;
+}
+
+.medecin-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.specialite {
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.tarif {
+  color: var(--color-primary);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.selection-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.btn-retour-liste {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0;
+  text-align: left;
+  align-self: flex-start;
+}
+
+.medecin-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.medecin-header h3 {
+  font-size: 18px;
+}
+
+.label-symptomes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.section-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-text-muted);
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+.liste-creneaux {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.creneau {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--color-secondary);
+  padding: 14px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+}
 </style>
