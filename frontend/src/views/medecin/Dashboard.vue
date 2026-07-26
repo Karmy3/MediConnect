@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../../services/api'
 import { useAuthStore } from '../../stores/auth'
+import Logo from '../../components/Logo.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -66,7 +67,7 @@ onMounted(chargerRendezVous)
   <div class="dashboard">
     <header class="topbar">
       <div class="brand">
-        <div class="brand-icon">+</div>
+        <Logo :size="26" />
         <span>MediConnect</span>
       </div>
       <div class="topbar-actions">
@@ -162,19 +163,6 @@ onMounted(chargerRendezVous)
   font-size: 18px;
   font-weight: 700;
   color: var(--color-primary-dark);
-}
-
-.brand-icon {
-  width: 32px;
-  height: 32px;
-  background: var(--color-primary);
-  color: var(--color-white);
-  border-radius: 9px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  font-weight: 700;
 }
 
 .topbar-actions {
