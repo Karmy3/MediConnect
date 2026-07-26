@@ -33,7 +33,7 @@ async function handleLogin() {
   <div class="auth-page">
     <div class="auth-panel">
       <div class="brand">
-        <Logo :size="28" />
+        <Logo :size="28" color="white" />
         <span>MediConnect</span>
       </div>
       <h1>Bon retour parmi nous</h1>

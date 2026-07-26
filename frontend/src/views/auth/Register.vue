@@ -41,7 +41,7 @@ async function handleRegister() {
   <div class="auth-page">
     <div class="auth-panel">
       <div class="brand">
-        <Logo :size="28" />
+        <Logo :size="28" color="white" />
         <span>MediConnect</span>
       </div>
       <h1>Rejoignez MediConnect</h1>
