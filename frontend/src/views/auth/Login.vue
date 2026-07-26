@@ -29,48 +29,224 @@ async function handleLogin() {
 </script>
 
 <template>
-  <div class="auth-container">
-    <div class="auth-card">
-      <h1>MediConnect</h1>
-      <p class="subtitle">Connexion à votre espace</p>
+  <div class="auth-page">
+    <div class="auth-panel">
+      <div class="brand">
+        <div class="brand-icon">+</div>
+        <span>MediConnect</span>
+      </div>
+      <h1>Bon retour parmi nous</h1>
+      <p class="tagline">Connectez-vous pour gerer vos consultations et rendez-vous medicaux.</p>
 
-      <form @submit.prevent="handleLogin">
-        <label>
-          Email
-          <input v-model="email" type="email" required placeholder="vous@exemple.com" />
-        </label>
+      <ul class="perks">
+        <li>Consultations avec des medecins verifies</li>
+        <li>Rendez-vous en quelques clics</li>
+        <li>Suivi medical securise</li>
+      </ul>
+    </div>
 
-        <label>
-          Mot de passe
-          <input v-model="password" type="password" required placeholder="••••••••" />
-        </label>
+    <div class="form-panel">
+      <div class="form-card">
+        <h2>Connexion</h2>
+        <p class="subtitle">Accedez a votre espace MediConnect</p>
 
-        <p v-if="erreur" class="erreur">{{ erreur }}</p>
+        <form @submit.prevent="handleLogin">
+          <label>
+            Email
+            <input v-model="email" type="email" required placeholder="vous@exemple.com" />
+          </label>
 
-        <button type="submit" :disabled="chargement">
-          {{ chargement ? 'Connexion...' : 'Se connecter' }}
-        </button>
-      </form>
+          <label>
+            Mot de passe
+            <input v-model="password" type="password" required placeholder="••••••••" />
+          </label>
 
-      <p class="lien">
-        Pas encore de compte ? <router-link to="/inscription">S'inscrire</router-link>
-      </p>
+          <p v-if="erreur" class="erreur">{{ erreur }}</p>
+
+          <button type="submit" :disabled="chargement" class="btn-primary">
+            {{ chargement ? 'Connexion...' : 'Se connecter' }}
+          </button>
+        </form>
+
+        <p class="lien">
+          Pas encore de compte ? <router-link to="/inscription">Creer un compte</router-link>
+        </p>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.auth-container { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f4f6f8; padding: 20px; }
-.auth-card { background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); width: 100%; max-width: 380px; }
-h1 { margin: 0 0 4px; color: #2563eb; text-align: center; }
-.subtitle { text-align: center; color: #6b7280; margin-bottom: 24px; }
-form { display: flex; flex-direction: column; gap: 16px; }
-label { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #374151; }
-input { padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; }
-input:focus { outline: none; border-color: #2563eb; }
-button { background: #2563eb; color: #fff; border: none; padding: 12px; border-radius: 8px; font-size: 15px; cursor: pointer; margin-top: 8px; }
-button:disabled { opacity: 0.6; cursor: not-allowed; }
-.erreur { color: #dc2626; font-size: 14px; margin: 0; }
-.lien { text-align: center; margin-top: 20px; font-size: 14px; color: #6b7280; }
-.lien a { color: #2563eb; text-decoration: none; }
+.auth-page {
+  display: flex;
+  min-height: 100vh;
+}
+
+.brand-icon {
+  width: 36px;
+  height: 36px;
+  background: var(--color-white);
+  color: var(--color-primary);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.auth-panel {
+  flex: 1;
+  background: linear-gradient(160deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: var(--color-white);
+  padding: 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+.auth-panel h1 {
+  font-size: 34px;
+  line-height: 1.25;
+  max-width: 420px;
+}
+
+.tagline {
+  color: rgba(255, 255, 255, 0.85);
+  max-width: 380px;
+  line-height: 1.6;
+}
+
+.perks {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.perks li {
+  padding-left: 26px;
+  position: relative;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.perks li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  font-weight: 700;
+}
+
+.form-panel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-white);
+  padding: 40px;
+}
+
+.form-card {
+  width: 100%;
+  max-width: 380px;
+}
+
+.form-card h2 {
+  font-size: 26px;
+}
+
+.subtitle {
+  color: var(--color-text-muted);
+  margin: 6px 0 28px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+input {
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 400;
+  transition: border-color 0.15s;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  padding: 13px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: background 0.15s;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.erreur {
+  color: var(--color-danger);
+  font-size: 14px;
+  margin: 0;
+  background: var(--color-danger-bg);
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+
+.lien {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.lien a {
+  font-weight: 600;
+  text-decoration: none;
+}
+
+@media (max-width: 900px) {
+  .auth-panel {
+    display: none;
+  }
+}
 </style>
