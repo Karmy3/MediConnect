@@ -10,7 +10,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class RendezVousConfirmeMail extends Mailable implements ShouldQueue
+class RendezVousRappelMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
@@ -21,14 +21,14 @@ class RendezVousConfirmeMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Votre rendez-vous MediConnect est confirme',
+            subject: 'Rappel : votre rendez-vous MediConnect est demain',
         );
     }
 
     public function content(): Content
     {
         return new Content(
-            view: 'emails.rendez-vous-confirme',
+            view: 'emails.rendez-vous-rappel',
         );
     }
 }

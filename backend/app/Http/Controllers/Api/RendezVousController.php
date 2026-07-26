@@ -85,7 +85,7 @@ class RendezVousController extends Controller
 
         $rendezVous->update(['statut' => 'confirme']);
 
-        Mail::to($rendezVous->patient->email)->send(new RendezVousConfirmeMail($rendezVous->fresh(['patient', 'creneau.medecinProfile.user'])));
+        Mail::to($rendezVous->patient->email)->queue(new RendezVousConfirmeMail($rendezVous->fresh(['patient', 'creneau.medecinProfile.user'])));
 
         return response()->json($rendezVous->fresh());
     }
