@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\CreneauController;
 use App\Http\Controllers\Api\RendezVousController;
 use App\Http\Controllers\Api\PaiementController;
+use App\Http\Controllers\Api\MedecinController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -39,3 +40,5 @@ Route::patch('/rendez-vous/{rendezVous}/annuler', [RendezVousController::class, 
 
 Route::get('/auth/google/redirect', [AuthController::class, 'redirectToGoogle']);
 Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
+
+Route::get('/medecins', [MedecinController::class, 'index']);
