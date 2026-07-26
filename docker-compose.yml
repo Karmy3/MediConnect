@@ -1,0 +1,91 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mediconnect_backend
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./backend:/var/www
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - mediconnect
+
+  queue:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mediconnect_queue
+    restart: unless-stopped
+    working_dir: /var/www
+    command: php artisan queue:work --tries=3 --backoff=5
+    volumes:
+      - ./backend:/var/www
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - backend
+    networks:
+      - mediconnect
+
+  scheduler:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mediconnect_scheduler
+    restart: unless-stopped
+    working_dir: /var/www
+    command: sh -c "while true; do php artisan schedule:run; sleep 60; done"
+    volumes:
+      - ./backend:/var/www
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - backend
+    networks:
+      - mediconnect
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mediconnect_frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    networks:
+      - mediconnect
+
+  db:
+    image: postgres:16-alpine
+    container_name: mediconnect_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mediconnect
+      POSTGRES_USER: mediconnect
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mediconnect"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - mediconnect
+
+volumes:
+  db_data:
+
+networks:
+  mediconnect:
+    driver: bridge
