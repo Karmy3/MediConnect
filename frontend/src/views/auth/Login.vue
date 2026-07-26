@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
+import Logo from '../../components/Logo.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -32,7 +33,7 @@ async function handleLogin() {
   <div class="auth-page">
     <div class="auth-panel">
       <div class="brand">
-        <div class="brand-icon">+</div>
+        <Logo :size="28" />
         <span>MediConnect</span>
       </div>
       <h1>Bon retour parmi nous</h1>
@@ -80,19 +81,6 @@ async function handleLogin() {
 .auth-page {
   display: flex;
   min-height: 100vh;
-}
-
-.brand-icon {
-  width: 36px;
-  height: 36px;
-  background: var(--color-white);
-  color: var(--color-primary);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  font-weight: 700;
 }
 
 .auth-panel {
