@@ -28,6 +28,14 @@ class PaiementController extends Controller
             return response()->json(['message' => 'Ce rendez-vous a deja ete paye.'], 409);
         }
 
+        if ($rendezVous->statut !== 'en_attente') {
+            return response()->json(['message' => 'Ce rendez-vous ne peut plus etre paye (statut actuel : '.$rendezVous->statut.').'], 422);
+        }
+
+        if ($rendezVous->creneau->date_debut->isPast()) {
+            return response()->json(['message' => 'Ce rendez-vous est deja passe, le paiement n\'est plus possible.'], 422);
+        }
+
         $validator = Validator::make($request->all(), [
             'payment_method' => 'required|string',
         ]);

@@ -35,6 +35,10 @@ class RendezVousController extends Controller
                 return response()->json(['message' => 'Ce creneau n\'est plus disponible.'], 409);
             }
 
+            if ($creneau->date_debut->isPast()) {
+                return response()->json(['message' => 'Ce creneau est deja passe.'], 422);
+            }
+
             $rendezVous = RendezVous::create([
                 'patient_id' => $request->user()->id,
                 'creneau_id' => $creneau->id,
@@ -81,6 +85,14 @@ class RendezVousController extends Controller
 
         if ($rendezVous->creneau->medecin_profile_id !== $medecinProfile->id) {
             return response()->json(['message' => 'Acces refuse.'], 403);
+        }
+
+        if ($rendezVous->statut !== 'paye') {
+            return response()->json(['message' => 'Ce rendez-vous doit etre paye avant de pouvoir etre confirme (statut actuel : '.$rendezVous->statut.').'], 422);
+        }
+
+        if ($rendezVous->creneau->date_debut->isPast()) {
+            return response()->json(['message' => 'Ce rendez-vous est deja passe, impossible de le confirmer.'], 422);
         }
 
         $rendezVous->update(['statut' => 'confirme']);
