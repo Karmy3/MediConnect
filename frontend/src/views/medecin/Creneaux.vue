@@ -49,30 +49,43 @@ onMounted(chargerCreneaux)
 
 <template>
   <div class="page">
-    <div class="card">
-      <router-link to="/medecin/tableau-de-bord" class="retour">← Retour</router-link>
-      <h1>Mes creneaux de disponibilite</h1>
+    <header class="page-header">
+      <router-link to="/medecin/tableau-de-bord" class="retour">← Retour au tableau de bord</router-link>
+    </header>
 
-      <div class="formulaire">
-        <label>
-          Debut
-          <input v-model="dateDebut" type="datetime-local" />
-        </label>
-        <label>
-          Fin
-          <input v-model="dateFin" type="datetime-local" />
-        </label>
-        <button @click="creerCreneau" class="btn-principal">Ajouter</button>
+    <div class="page-content">
+      <div class="intro">
+        <h1>Mes creneaux de disponibilite</h1>
+        <p class="muted">Ajoutez des creneaux pour que vos patients puissent prendre rendez-vous.</p>
       </div>
 
-      <p v-if="erreur" class="erreur">{{ erreur }}</p>
+      <div class="card">
+        <p class="section-label">Nouveau creneau</p>
+        <div class="formulaire">
+          <label>
+            Debut
+            <input v-model="dateDebut" type="datetime-local" />
+          </label>
+          <label>
+            Fin
+            <input v-model="dateFin" type="datetime-local" />
+          </label>
+          <button @click="creerCreneau" class="btn-primary">Ajouter</button>
+        </div>
+        <p v-if="erreur" class="message erreur">{{ erreur }}</p>
+      </div>
 
-      <p v-if="chargement">Chargement...</p>
-      <p v-else-if="!creneaux.length" class="vide">Aucun creneau cree pour le moment.</p>
+      <div v-if="chargement" class="etat">Chargement...</div>
+      <div v-else-if="!creneaux.length" class="etat-vide">
+        <div class="etat-vide-icon">🗓️</div>
+        <h3>Aucun creneau cree pour le moment</h3>
+        <p class="muted">Utilisez le formulaire ci-dessus pour ajouter votre premiere disponibilite.</p>
+      </div>
 
       <div v-else class="liste">
+        <p class="section-label">Creneaux existants</p>
         <div v-for="c in creneaux" :key="c.id" class="creneau">
-          <div>
+          <div class="creneau-info">
             <span>{{ new Date(c.date_debut).toLocaleString('fr-FR') }}</span>
             <span class="badge" :class="'badge-' + c.statut">{{ c.statut }}</span>
           </div>
@@ -90,22 +103,188 @@ onMounted(chargerCreneaux)
 </template>
 
 <style scoped>
-.page { min-height: 100vh; background: #f4f6f8; padding: 32px; }
-.card { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 12px; padding: 32px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
-.retour { color: #6b7280; text-decoration: none; font-size: 14px; }
-h1 { margin: 12px 0 24px; }
-.formulaire { display: flex; gap: 12px; align-items: flex-end; margin-bottom: 20px; flex-wrap: wrap; }
-label { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #374151; }
-input { padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; }
-.btn-principal { background: #2563eb; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-size: 14px; }
-.btn-danger { background: #fee2e2; color: #dc2626; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; }
-.petit { padding: 6px 12px; font-size: 13px; }
-.erreur { color: #dc2626; font-size: 14px; margin: 8px 0; }
-.vide { color: #6b7280; text-align: center; padding: 40px 0; }
-.liste { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
-.creneau { display: flex; justify-content: space-between; align-items: center; background: #f9fafb; padding: 12px 16px; border-radius: 8px; }
-.creneau > div { display: flex; gap: 10px; align-items: center; }
-.badge { font-size: 12px; padding: 4px 10px; border-radius: 999px; }
-.badge-disponible { background: #d1fae5; color: #065f46; }
-.badge-reserve { background: #fef3c7; color: #92400e; }
+.page {
+  min-height: 100vh;
+  background: var(--color-secondary);
+}
+
+.page-header {
+  background: var(--color-white);
+  padding: 18px 40px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.retour {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.page-content {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.intro h1 {
+  font-size: 26px;
+}
+
+.muted {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  margin: 6px 0 24px;
+}
+
+.card {
+  background: var(--color-white);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+}
+
+.section-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-text-muted);
+  font-weight: 700;
+  margin: 0 0 14px;
+}
+
+.formulaire {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+input {
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  padding: 12px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-dark);
+}
+
+.btn-danger {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  border: none;
+  padding: 9px 16px;
+  border-radius: 9px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.petit {
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
+.message {
+  font-size: 14px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  margin-top: 14px;
+}
+
+.message.erreur {
+  color: var(--color-danger);
+  background: var(--color-danger-bg);
+}
+
+.etat {
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: 40px 0;
+}
+
+.etat-vide {
+  text-align: center;
+  padding: 50px 20px;
+  background: var(--color-white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.etat-vide-icon {
+  font-size: 36px;
+  margin-bottom: 12px;
+}
+
+.etat-vide h3 {
+  margin-bottom: 6px;
+}
+
+.liste {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.creneau {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--color-white);
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+.creneau-info {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 14px;
+}
+
+.badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+
+.badge-disponible {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.badge-reserve {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
 </style>
