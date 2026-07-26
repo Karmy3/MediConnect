@@ -40,12 +40,8 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:patient,medecin',
-            'specialite' => 'required_if:role,medecin|string|max:255',
-            'tarif_consultation' => 'required_if:role,medecin|numeric|min:0',
+            'specialite' => 'nullable|required_if:role,medecin|string|max:255',
+            'tarif_consultation' => 'nullable|required_if:role,medecin|numeric|min:0',
         ]);
 
         if ($validator->fails()) {
