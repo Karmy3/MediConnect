@@ -76,7 +76,7 @@ onMounted(chargerRendezVous)
   <div class="dashboard">
     <header class="topbar">
       <div class="brand">
-        <Logo :size="26" />
+        <Logo :size="26" color="#0d9488" />
         <span>MediConnect</span>
       </div>
       <div class="topbar-actions">
