@@ -16,6 +16,7 @@ const chargement = ref(true)
 const erreur = ref('')
 const rdvAPayer = ref<number | null>(null)
 const rdvAAnnuler = ref<number | null>(null)
+const demanderDeconnexion = ref(false)
 const toast = ref<{ message: string; type: 'success' | 'error' } | null>(null)
 
 async function chargerRendezVous() {
@@ -62,9 +63,11 @@ async function confirmerAnnulation() {
   }
 }
 
-function deconnexion() {
+async function confirmerDeconnexion() {
+  // On redirige d'abord, puis on vide la session une fois sur la page de connexion
+  // pour eviter que le dashboard ne "flash" un etat sans utilisateur avant la redirection.
+  await router.push('/connexion')
   authStore.logout()
-  router.push('/connexion')
 }
 
 function statutLabel(statut: string) {
@@ -97,7 +100,7 @@ onMounted(chargerRendezVous)
           <div class="avatar">{{ initiales(authStore.user?.name || '') }}</div>
           <span>{{ authStore.user?.name }}</span>
         </div>
-        <button @click="deconnexion" class="btn-ghost">Deconnexion</button>
+        <button @click="demanderDeconnexion = true" class="btn-ghost">Deconnexion</button>
       </div>
     </header>
 
@@ -174,6 +177,14 @@ onMounted(chargerRendezVous)
       message="Cette action liberera le creneau et ne pourra pas etre annulee."
       @confirm="confirmerAnnulation"
       @cancel="rdvAAnnuler = null"
+    />
+
+    <ConfirmModal
+      v-if="demanderDeconnexion"
+      titre="Se deconnecter ?"
+      message="Vous devrez vous reconnecter pour acceder a votre espace patient."
+      @confirm="confirmerDeconnexion"
+      @cancel="demanderDeconnexion = false"
     />
 
     <Toast v-if="toast" :message="toast.message" :type="toast.type" />
