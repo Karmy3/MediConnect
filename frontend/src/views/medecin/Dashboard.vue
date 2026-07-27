@@ -4,15 +4,23 @@ import { useRouter } from 'vue-router'
 import api from '../../services/api'
 import { useAuthStore } from '../../stores/auth'
 import Logo from '../../components/Logo.vue'
+import Toast from '../../components/Toast.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
 const rendezVous = ref<any[]>([])
 const chargement = ref(true)
+const analyseEnCours = ref<number | null>(null)
+const toast = ref<{ message: string; type: 'success' | 'error' } | null>(null)
 
 function initiales(nom: string) {
   return nom ? nom.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() : '?'
+}
+
+function afficherToast(message: string, type: 'success' | 'error') {
+  toast.value = { message, type }
+  setTimeout(() => (toast.value = null), 3500)
 }
 
 async function chargerRendezVous() {
@@ -29,18 +37,22 @@ async function confirmer(rdvId: number) {
   try {
     await api.patch(`/rendez-vous/${rdvId}/confirmer`)
     await chargerRendezVous()
+    afficherToast('Rendez-vous confirme.', 'success')
   } catch (e: any) {
-    alert(e.response?.data?.message || 'Erreur lors de la confirmation.')
+    afficherToast(e.response?.data?.message || 'Erreur lors de la confirmation.', 'error')
   }
 }
 
 async function analyserIA(rdvId: number) {
+  analyseEnCours.value = rdvId
   try {
-    const response = await api.post(`/rendez-vous/${rdvId}/analyser-ia`)
-    alert('Analyse IA : ' + response.data.analyse_ia)
+    await api.post(`/rendez-vous/${rdvId}/analyser-ia`)
     await chargerRendezVous()
+    afficherToast('Analyse IA generee avec succes.', 'success')
   } catch (e: any) {
-    alert(e.response?.data?.message || 'Erreur lors de l\'analyse.')
+    afficherToast(e.response?.data?.message || 'Erreur lors de l\'analyse.', 'error')
+  } finally {
+    analyseEnCours.value = null
   }
 }
 
@@ -127,14 +139,17 @@ onMounted(chargerRendezVous)
             <button
               v-if="rdv.symptomes_description && !rdv.analyse_ia"
               @click="analyserIA(rdv.id)"
+              :disabled="analyseEnCours === rdv.id"
               class="btn-secondary petit"
             >
-              Analyser avec l'IA
+              {{ analyseEnCours === rdv.id ? 'Analyse en cours...' : 'Analyser avec l\'IA' }}
             </button>
           </div>
         </div>
       </div>
     </main>
+
+    <Toast v-if="toast" :message="toast.message" :type="toast.type" />
   </div>
 </template>
 
@@ -258,6 +273,11 @@ onMounted(chargerRendezVous)
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
+}
+
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .petit {
