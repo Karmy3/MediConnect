@@ -12,8 +12,7 @@ class RendezVous extends Model
     use HasFactory;
 
     protected $table = 'rendez_vous';
-
-    protected $fillable = ['patient_id', 'creneau_id', 'statut', 'symptomes_description'];
+    protected $fillable = ['patient_id', 'creneau_id', 'statut', 'symptomes_description', 'analyse_ia'];
 
     public function patient(): BelongsTo
     {
