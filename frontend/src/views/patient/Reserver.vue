@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../../services/api'
 
@@ -23,7 +23,6 @@ function initiales(nom: string) {
 async function chercherMedecins() {
   erreur.value = ''
   chargementRecherche.value = true
-  medecins.value = []
   medecinSelectionne.value = null
   creneaux.value = []
 
@@ -33,7 +32,9 @@ async function chercherMedecins() {
     })
     medecins.value = response.data
     if (!medecins.value.length) {
-      erreur.value = 'Aucun medecin trouve.'
+      erreur.value = recherche.value
+        ? 'Aucun medecin trouve pour cette recherche.'
+        : 'Aucun medecin disponible pour le moment.'
     }
   } catch (e: any) {
     erreur.value = 'Erreur lors de la recherche.'
@@ -77,6 +78,8 @@ async function reserver(creneauId: number) {
     chargementReservation.value = false
   }
 }
+
+onMounted(chercherMedecins)
 </script>
 
 <template>
@@ -88,7 +91,7 @@ async function reserver(creneauId: number) {
     <div class="page-content">
       <div class="intro">
         <h1>Prendre rendez-vous</h1>
-        <p class="muted">Trouvez un medecin par nom ou specialite, et reservez un creneau disponible.</p>
+        <p class="muted">Parcourez la liste des medecins ou cherchez par nom/specialite.</p>
       </div>
 
       <div class="card recherche-card">
@@ -108,7 +111,12 @@ async function reserver(creneauId: number) {
       <p v-if="erreur" class="message erreur">{{ erreur }}</p>
       <p v-if="succes" class="message succes">Rendez-vous reserve avec succes ! Redirection...</p>
 
+      <div v-if="chargementRecherche && !medecins.length" class="message">Chargement des medecins...</div>
+
       <div v-if="medecins.length && !medecinSelectionne" class="liste-medecins">
+        <p class="section-label">
+          {{ recherche ? 'Resultats de recherche' : `${medecins.length} medecin(s) disponible(s)` }}
+        </p>
         <div
           v-for="m in medecins"
           :key="m.id"
@@ -257,6 +265,7 @@ input:focus, textarea:focus {
   padding: 12px 14px;
   border-radius: 10px;
   margin-bottom: 16px;
+  color: var(--color-text-muted);
 }
 
 .message.erreur {
@@ -273,6 +282,17 @@ input:focus, textarea:focus {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.section-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-text-muted);
+  font-weight: 700;
+  margin: 0 0 4px;
 }
 
 .medecin-card {
@@ -333,6 +353,7 @@ input:focus, textarea:focus {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  margin-top: 16px;
 }
 
 .btn-retour-liste {
@@ -363,15 +384,6 @@ input:focus, textarea:focus {
   gap: 8px;
   font-size: 14px;
   font-weight: 600;
-}
-
-.section-label {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--color-text-muted);
-  font-weight: 700;
-  margin: 0 0 4px;
 }
 
 .liste-creneaux {
