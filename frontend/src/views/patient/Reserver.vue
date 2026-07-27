@@ -43,6 +43,11 @@ async function chercherMedecins() {
   }
 }
 
+function effacerRecherche() {
+  recherche.value = ''
+  chercherMedecins()
+}
+
 async function selectionnerMedecin(medecin: any) {
   medecinSelectionne.value = medecin
   creneaux.value = []
@@ -96,12 +101,23 @@ onMounted(chercherMedecins)
 
       <div class="card recherche-card">
         <div class="recherche">
-          <input
-            v-model="recherche"
-            type="text"
-            placeholder="ex: Rakoto, Generaliste, Cardiologue..."
-            @keyup.enter="chercherMedecins"
-          />
+          <div class="input-avec-effacer">
+            <input
+              v-model="recherche"
+              type="text"
+              placeholder="ex: Rakoto, Generaliste, Cardiologue..."
+              @keyup.enter="chercherMedecins"
+            />
+            <button
+              v-if="recherche"
+              @click="effacerRecherche"
+              class="btn-effacer"
+              type="button"
+              aria-label="Effacer la recherche"
+            >
+              ×
+            </button>
+          </div>
           <button @click="chercherMedecins" :disabled="chargementRecherche" class="btn-primary">
             {{ chargementRecherche ? 'Recherche...' : 'Chercher' }}
           </button>
@@ -221,12 +237,46 @@ onMounted(chercherMedecins)
   gap: 12px;
 }
 
+.input-avec-effacer {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.input-avec-effacer input {
+  width: 100%;
+  padding-right: 36px;
+}
+
+.btn-effacer {
+  position: absolute;
+  right: 8px;
+  background: var(--color-secondary);
+  border: none;
+  color: var(--color-text-muted);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.btn-effacer:hover {
+  background: var(--color-border);
+  color: var(--color-text);
+}
+
 input, textarea {
   padding: 12px 14px;
   border: 1px solid var(--color-border);
   border-radius: 10px;
   font-size: 14px;
-  flex: 1;
 }
 
 input:focus, textarea:focus {
