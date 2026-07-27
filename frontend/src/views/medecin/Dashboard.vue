@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import api from '../../services/api'
 import { useAuthStore } from '../../stores/auth'
 import Logo from '../../components/Logo.vue'
+import ConfirmModal from '../../components/ConfirmModal.vue'
 import Toast from '../../components/Toast.vue'
 
 const router = useRouter()
@@ -12,6 +13,7 @@ const authStore = useAuthStore()
 const rendezVous = ref<any[]>([])
 const chargement = ref(true)
 const analyseEnCours = ref<number | null>(null)
+const demanderDeconnexion = ref(false)
 const toast = ref<{ message: string; type: 'success' | 'error' } | null>(null)
 
 function initiales(nom: string) {
@@ -56,9 +58,9 @@ async function analyserIA(rdvId: number) {
   }
 }
 
-function deconnexion() {
+async function confirmerDeconnexion() {
+  await router.push('/connexion')
   authStore.logout()
-  router.push('/connexion')
 }
 
 function statutLabel(statut: string) {
@@ -88,7 +90,7 @@ onMounted(chargerRendezVous)
           <span>Dr {{ authStore.user?.name }}</span>
         </div>
         <router-link to="/medecin/creneaux" class="btn-ghost">Mes creneaux</router-link>
-        <button @click="deconnexion" class="btn-ghost">Deconnexion</button>
+        <button @click="demanderDeconnexion = true" class="btn-ghost">Deconnexion</button>
       </div>
     </header>
 
@@ -148,6 +150,14 @@ onMounted(chargerRendezVous)
         </div>
       </div>
     </main>
+
+    <ConfirmModal
+      v-if="demanderDeconnexion"
+      titre="Se deconnecter ?"
+      message="Vous devrez vous reconnecter pour acceder a votre espace medecin."
+      @confirm="confirmerDeconnexion"
+      @cancel="demanderDeconnexion = false"
+    />
 
     <Toast v-if="toast" :message="toast.message" :type="toast.type" />
   </div>
