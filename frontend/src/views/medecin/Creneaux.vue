@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import api from '../../services/api'
+import ConfirmModal from '../../components/ConfirmModal.vue'
+import Toast from '../../components/Toast.vue'
 
 const creneaux = ref<any[]>([])
 const chargement = ref(true)
@@ -8,6 +10,14 @@ const erreur = ref('')
 
 const dateDebut = ref('')
 const dateFin = ref('')
+
+const creneauASupprimer = ref<number | null>(null)
+const toast = ref<{ message: string; type: 'success' | 'error' } | null>(null)
+
+function afficherToast(message: string, type: 'success' | 'error') {
+  toast.value = { message, type }
+  setTimeout(() => (toast.value = null), 3500)
+}
 
 async function chargerCreneaux() {
   chargement.value = true
@@ -29,18 +39,26 @@ async function creerCreneau() {
     dateDebut.value = ''
     dateFin.value = ''
     await chargerCreneaux()
+    afficherToast('Creneau ajoute avec succes.', 'success')
   } catch (e: any) {
     erreur.value = e.response?.data?.message || 'Erreur lors de la creation du creneau.'
   }
 }
 
-async function supprimer(creneauId: number) {
-  if (!confirm('Supprimer ce creneau ?')) return
+function demanderSuppression(creneauId: number) {
+  creneauASupprimer.value = creneauId
+}
+
+async function confirmerSuppression() {
+  if (!creneauASupprimer.value) return
   try {
-    await api.delete(`/creneaux/${creneauId}`)
+    await api.delete(`/creneaux/${creneauASupprimer.value}`)
     await chargerCreneaux()
+    afficherToast('Creneau supprime.', 'success')
   } catch (e: any) {
-    alert(e.response?.data?.message || 'Erreur lors de la suppression.')
+    afficherToast(e.response?.data?.message || 'Erreur lors de la suppression.', 'error')
+  } finally {
+    creneauASupprimer.value = null
   }
 }
 
@@ -91,7 +109,7 @@ onMounted(chargerCreneaux)
           </div>
           <button
             v-if="c.statut === 'disponible'"
-            @click="supprimer(c.id)"
+            @click="demanderSuppression(c.id)"
             class="btn-danger petit"
           >
             Supprimer
@@ -99,6 +117,16 @@ onMounted(chargerCreneaux)
         </div>
       </div>
     </div>
+
+    <ConfirmModal
+      v-if="creneauASupprimer"
+      titre="Supprimer ce creneau ?"
+      message="Cette action est definitive et ne peut pas etre annulee."
+      @confirm="confirmerSuppression"
+      @cancel="creneauASupprimer = null"
+    />
+
+    <Toast v-if="toast" :message="toast.message" :type="toast.type" />
   </div>
 </template>
 
